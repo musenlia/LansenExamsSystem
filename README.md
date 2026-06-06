@@ -41,6 +41,16 @@ U 盘即插即用：绿色免安装设计，解压即可运行，不写注册表
 | 服务器 | Uvicorn |
 | 语言 | Python 3.13+ |
 
+
+## 项目截图
+
+<img width="439" height="434" alt="登录页面" src="https://github.com/user-attachments/assets/4c8f244a-de79-45e9-895e-5bb5a91edf5c" />
+<img width="1204" height="662" alt="管理页" src="https://github.com/user-attachments/assets/a5531b42-3df9-433f-8e01-6d0af5e60782" />
+<img width="1366" height="768" alt="实时监考界面" src="https://github.com/user-attachments/assets/2e7fcfd2-2574-4bff-938c-12c4f77b1cbb" />
+<img width="1366" height="768" alt="考试登录" src="https://github.com/user-attachments/assets/315153cc-6325-413a-a59b-ce571dad76b8" />
+<img width="1366" height="768" alt="考试答题" src="https://github.com/user-attachments/assets/ceb9714c-1f6a-42a7-acab-d893bb819fca" />
+
+
 ## 快速开始
 
 本系统为**便携版**，已内置 Python 运行环境和所有依赖，无需安装任何软件。
@@ -55,10 +65,3 @@ cd LansenExamsSystem
 #    启动后自动打开浏览器访问 http://localhost:8000
 #    局域网内电脑打开浏览器访问 http://IP地址:8000
 
-## 项目截图
-
-<img width="1366" height="768" alt="实时监考界面" src="https://github.com/user-attachments/assets/2e7fcfd2-2574-4bff-938c-12c4f77b1cbb" />
-<img width="1366" height="768" alt="考试登录" src="https://github.com/user-attachments/assets/315153cc-6325-413a-a59b-ce571dad76b8" />
-<img width="1366" height="768" alt="考试答题" src="https://github.com/user-attachments/assets/ceb9714c-1f6a-42a7-acab-d893bb819fca" />
-<img width="1204" height="662" alt="管理页" src="https://github.com/user-attachments/assets/a5531b42-3df9-433f-8e01-6d0af5e60782" />
-<img width="439" height="434" alt="登录页面" src="https://github.com/user-attachments/assets/4c8f244a-de79-45e9-895e-5bb5a91edf5c" />
