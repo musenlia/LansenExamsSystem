@@ -1,0 +1,37 @@
+@echo off
+chcp 65001 >nul
+set PORT=8000
+
+echo ============================================================
+echo   Training Exam Management System - Port Check & Start
+echo ============================================================
+
+:: 查找占用端口的 PID
+for /f "tokens=5" %%i in ('netstat -ano ^| findstr :%PORT%') do (
+    set PID=%%i
+)
+
+:: 判断是否被占用
+if defined PID (
+    echo [!] 检测到端口 %PORT% 已被占用，PID = %PID%
+    echo [+] 正在关闭进程...
+    taskkill /PID %PID% /F >nul 2>&1
+    if %errorlevel%==0 (
+        echo [√] 已成功释放端口 %PORT%
+    ) else (
+        echo [×] 无法关闭进程，请手动以管理员身份运行！
+        pause
+        exit /b 1
+    )
+) else (
+    echo [√] 端口 %PORT% 未被占用，可直接启动
+)
+
+timeout /t 1 >nul
+
+:: ===== 下面是你的原启动命令 =====
+:: 如果你的启动方式不同，只改这一行即可
+:: echo [+] 正在启动学习培训考试管理系统...
+:: python main.py
+
+pause

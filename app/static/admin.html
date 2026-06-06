@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考试管理 - 重考/续考/补时</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 20px; }
+        .header h1 { font-size: 24px; font-weight: 600; }
+        .header p { opacity: 0.9; margin-top: 5px; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #555; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+        .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(17,153,142,0.4); }
+        .btn-warning { background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); color: white; }
+        .btn-warning:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(252,74,26,0.4); }
+        .btn-danger { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,107,107,0.4); }
+        .btn-secondary { background: #f5f5f5; color: #666; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-in_progress { background: #e3f2fd; color: #1976d2; }
+        .status-submitted { background: #e8f5e9; color: #388e3c; }
+        .status-not_started { background: #fafafa; color: #757575; }
+        .status-force_submitted { background: #fff3e0; color: #e65100; }
+        .status-auto_submitted { background: #fce4ec; color: #c2185b; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+        .table th { background: #fafafa; font-weight: 600; color: #555; font-size: 13px; }
+        .table tr:hover { background: #fafafa; }
+        .table tr.selected { background: #e3f2fd; }
+        .table input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        .message { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: none; }
+        .message.success { background: #e8f5e9; color: #388e3c; }
+        .message.error { background: #ffebee; color: #c62828; }
+        .message.info { background: #e3f2fd; color: #1976d2; }
+        .version-badge { position: fixed; top: 20px; right: 20px; background: #667eea; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; z-index: 100; }
+        .search-box { display: flex; gap: 12px; margin-bottom: 16px; }
+        .search-box input { flex: 1; max-width: 300px; }
+        .loading { text-align: center; padding: 40px; color: #999; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .select-all { margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .select-all label { margin: 0; cursor: pointer; }
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+        .login-box { max-width: 400px; margin: 50px auto; }
+        .user-info { float: right; font-size: 13px; color: rgba(255,255,255,0.9); }
+        .user-info button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-left: 12px; }
+        .user-info button:hover { background: rgba(255,255,255,0.3); }
+    </style>
+</head>
+<body>
+    <div class="version-badge">V2.0</div>
+    <div class="container" id="mainContainer" style="display: none;">
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>考试管理中心</h1>
+                    <p>重考 / 续考 / 补时 管理功能</p>
+                </div>
+                <div class="user-info">
+                    <span id="userName">未登录</span>
+                    <button onclick="goToMain()">返回系统</button>
+                    <button onclick="logout()">退出登录</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 考试选择 -->
+        <div class="card">
+            <div class="card-title">📋 选择考试</div>
+            <div class="form-group">
+                <label>考试列表</label>
+                <select id="examSelect" onchange="loadExamOverview()">
+                    <option value="">请选择考试</option>
+                </select>
+            </div>
+            <div id="examOverview" style="display: none;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 14px; opacity: 0.9;">考试状态</div>
+                            <div style="font-size: 20px; font-weight: bold;" id="examStatus">进行中</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 14px; opacity: 0.9;">考试倒计时</div>
+                            <div style="font-size: 28px; font-weight: bold; font-family: monospace;" id="examCountdown">--:--:--</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 14px; opacity: 0.9;">考试时长</div>
+                            <div style="font-size: 20px; font-weight: bold;" id="examDuration">60 分钟</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.2); display: flex; justify-content: space-around;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold;" id="statTotal">0</div>
+                            <div style="font-size: 12px; opacity: 0.8;">总人数</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold;" id="statInProgress">0</div>
+                            <div style="font-size: 12px; opacity: 0.8;">答题中</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold;" id="statSubmitted">0</div>
+                            <div style="font-size: 12px; opacity: 0.8;">已交卷</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold;" id="statNotStarted">0</div>
+                            <div style="font-size: 12px; opacity: 0.8;">未开始</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="loadExams()">🔄 刷新考试列表</button>
+            <button class="btn btn-warning" id="btnReactivate" onclick="reactivateExam()" style="display:none;margin-left:10px;">🔁 重新激活考试</button>
+        </div>
+
+        <!-- 考生列表 -->
+        <div class="card">
+            <div class="card-title">👥 考生列表</div>
+            
+            <!-- 搜索和筛选 -->
+            <div class="search-box">
+                <input type="text" id="searchName" placeholder="搜索考生姓名..." onkeyup="filterStudents()">
+                <select id="statusFilter" onchange="filterStudents()">
+                    <option value="">全部状态</option>
+                    <option value="in_progress">答题中</option>
+                    <option value="submitted">已交卷</option>
+                    <option value="not_started">未开始</option>
+                    <option value="force_submitted">强制交卷</option>
+                    <option value="auto_submitted">自动交卷</option>
+                </select>
+            </div>
+
+            <!-- 选择全选 -->
+            <div class="select-all">
+                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                <label for="selectAll">全选</label>
+                <span style="color:#999; margin-left: 16px;">已选择 <span id="selectedCount">0</span> 人</span>
+            </div>
+
+            <!-- 考生表格 -->
+            <div id="studentTableContainer" style="overflow-x: auto;">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>加载中...</p>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button class="btn btn-warning" onclick="batchReset()" disabled id="btnReset">
+                    🔄 重考 (选中)
+                </button>
+                <button class="btn btn-success" onclick="batchResume()" disabled id="btnResume">
+                    ▶️ 续考 (选中)
+                </button>
+                <button class="btn btn-primary" onclick="batchExtraTime()" disabled id="btnExtraTime">
+                    ⏱️ 补时 (选中)
+                </button>
+                <button class="btn btn-danger" onclick="batchForceSubmit()" disabled id="btnForceSubmit">
+                    ✅ 强制交卷 (选中)
+                </button>
+            </div>
+        </div>
+
+        <!-- 操作日志 -->
+        <div class="card">
+            <div class="card-title">📝 操作日志</div>
+            <div id="logContainer" style="max-height: 200px; overflow-y: auto;">
+                <div style="color: #999; text-align: center; padding: 20px;">暂无操作记录</div>
+            </div>
+        </div>
+
+        <!-- 功能说明 -->
+        <div class="card">
+            <div class="card-title">💡 功能说明</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                <div style="background: #fff3e0; padding: 16px; border-radius: 8px; border-left: 4px solid #ff9800;">
+                    <h4 style="color: #e65100; margin-bottom: 8px;">🔄 重考 (Reset)</h4>
+                    <p style="font-size: 13px; color: #666;">将已交卷考生的会话重置为未开始状态，清空答题记录和分数。适用于考生误点交卷或需要重新作答的情况。</p>
+                </div>
+                <div style="background: #e8f5e9; padding: 16px; border-radius: 8px; border-left: 4px solid #4caf50;">
+                    <h4 style="color: #2e7d32; margin-bottom: 8px;">▶️ 续考 (Resume)</h4>
+                    <p style="font-size: 13px; color: #666;">将已交卷/超时的考生会话恢复为答题中状态，保留答题记录。适用于考生掉线后重连或网络故障导致自动提交的情况。</p>
+                </div>
+                <div style="background: #e3f2fd; padding: 16px; border-radius: 8px; border-left: 4px solid #2196f3;">
+                    <h4 style="color: #1565c0; margin-bottom: 8px;">⏱️ 补时 (Extra Time)</h4>
+                    <p style="font-size: 13px; color: #666;">为正在答题的考生增加额外考试时间。适用于考试机器故障或考生需要额外时间的情况。</p>
+                </div>
+                <div style="background: #fce4ec; padding: 16px; border-radius: 8px; border-left: 4px solid #e91e63;">
+                    <h4 style="color: #c2185b; margin-bottom: 8px;">✅ 强制交卷</h4>
+                    <p style="font-size: 13px; color: #666;">强制提交考生试卷，结束考试。适用于考试时间结束或需要提前收卷的情况。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录页面 -->
+    <div class="login-box" id="loginBox">
+        <div class="card">
+            <div class="card-title" style="text-align: center;">🔐 管理员登录</div>
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="loginUsername" placeholder="请输入用户名" value="admin">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="loginPassword" placeholder="请输入密码">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="login()">登录</button>
+            <p style="text-align: center; margin-top: 16px; color: #999; font-size: 13px;">
+                默认账号: admin / admin0668
+            </p>
+            <div id="loginError" style="display: none; color: #c62828; text-align: center; margin-top: 12px;">
+                登录失败，请检查用户名和密码
+            </div>
+        </div>
+    </div>
+
+    <!-- 补时弹窗 -->
+    <div id="extraTimeModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+        <div style="background: white; padding: 24px; border-radius: 12px; width: 400px; max-width: 90%;">
+            <h3 style="margin-bottom: 16px;">设置补时时间</h3>
+            <div class="form-group">
+                <label>补时分钟数</label>
+                <input type="number" id="modalExtraMinutes" value="30" min="1" max="120">
+            </div>
+            <div class="btn-group" style="justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeExtraTimeModal()">取消</button>
+                <button class="btn btn-primary" onclick="confirmExtraTime()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let students = [];
+        let selectedStudents = [];
+        let pendingExtraTimeSessionIds = [];
+        let currentUser = null;
+        let accessToken = null;
+        let refreshInterval = null;
+
+        function getAuthHeaders() {
+            const headers = {};
+            if (accessToken) {
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+            return headers;
+        }
+
+        async function checkLogin() {
+            try {
+                // 优先使用 admin 页面的 token，回退到主系统的 exam_token
+                accessToken = localStorage.getItem('access_token') || localStorage.getItem('exam_token');
+                if (accessToken && !localStorage.getItem('access_token')) {
+                    localStorage.setItem('access_token', accessToken);
+                }
+                const response = await fetch(`${API_BASE}/auth/me`, { 
+                    headers: getAuthHeaders()
+                });
+                const result = await response.json();
+                if (result.code === 0 && result.data) {
+                    currentUser = result.data;
+                    document.getElementById('userName').textContent = currentUser.name || currentUser.username;
+                    document.getElementById('loginBox').style.display = 'none';
+                    document.getElementById('mainContainer').style.display = 'block';
+                    loadExams();
+                    startAutoRefresh();
+                    return true;
+                }
+            } catch (error) {
+                console.log('未登录');
+            }
+            document.getElementById('loginBox').style.display = 'block';
+            document.getElementById('mainContainer').style.display = 'none';
+            stopAutoRefresh();
+            return false;
+        }
+
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    accessToken = result.data.token;
+                    localStorage.setItem('access_token', accessToken);
+                    document.getElementById('loginError').style.display = 'none';
+                    await checkLogin();
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                    document.getElementById('loginError').textContent = result.message || '登录失败';
+                }
+            } catch (error) {
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('loginError').textContent = '网络错误';
+            }
+        }
+
+        function logout() {
+            fetch(`${API_BASE}/auth/logout`, { 
+                method: 'POST',
+                headers: getAuthHeaders()
+            }).then(() => {
+                accessToken = null;
+                localStorage.removeItem('access_token');
+                currentUser = null;
+                document.getElementById('loginBox').style.display = 'block';
+                document.getElementById('mainContainer').style.display = 'none';
+                stopAutoRefresh();
+            });
+        }
+
+        function goToMain() {
+            window.location.href = '/';
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            refreshInterval = setInterval(() => {
+                const examSelect = document.getElementById('examSelect');
+                if (examSelect.value) {
+                    loadStudents();
+                }
+            }, 30000);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+
+        async function loadExams() {
+            try {
+                const response = await fetch(`${API_BASE}/exams`, { 
+                    headers: getAuthHeaders()
+                });
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    const select = document.getElementById('examSelect');
+                    select.innerHTML = '<option value="">请选择考试</option>';
+                    const examList = result.data.items || [];
+                    examList.forEach(exam => {
+                        const option = document.createElement('option');
+                        option.value = exam.id;
+                        option.textContent = `${exam.name} (${exam.status === 'ongoing' ? '进行中' : exam.status === 'pending' ? '未开始' : exam.status === 'published' ? '进行中' : '已结束'})`;
+                        select.appendChild(option);
+                    });
+                    addLog(`考试列表加载成功，共 ${examList.length} 场考试`, 'success');
+                } else if (result.code === 401) {
+                    showMessage('请重新登录', 'error');
+                    checkLogin();
+                } else {
+                    showMessage(result.message || '加载失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误', 'error');
+                addLog(`加载考试列表失败: ${error.message}`, 'error');
+            }
+        }
+
+        let countdownInterval = null;
+        let currentExamData = null;
+
+        async function loadExamOverview() {
+            const examId = document.getElementById('examSelect').value;
+            if (!examId) {
+                document.getElementById('examOverview').style.display = 'none';
+                stopCountdownTimer();
+                loadStudents();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/monitor/exams/${examId}/overview`, {
+                    headers: getAuthHeaders()
+                });
+                const result = await response.json();
+
+                if (result.code === 0) {
+                    currentExamData = result.data;
+                    updateExamOverview(result.data);
+                    document.getElementById('examOverview').style.display = 'block';
+                    startCountdownTimer(result.data);
+                    loadStudents();
+                } else {
+                    document.getElementById('examOverview').style.display = 'none';
+                    stopCountdownTimer();
+                    loadStudents();
+                }
+            } catch (error) {
+                document.getElementById('examOverview').style.display = 'none';
+                stopCountdownTimer();
+                loadStudents();
+            }
+        }
+
+        function updateExamOverview(data) {
+            const statusMap = {
+                'pending': '未开始',
+                'published': '进行中',
+                'ongoing': '进行中',
+                'ended': '已结束',
+                'archived': '已归档'
+            };
+            document.getElementById('examStatus').textContent = statusMap[data.status] || data.status;
+            document.getElementById('examDuration').textContent = (data.duration || 0) + ' 分钟';
+            document.getElementById('statTotal').textContent = data.total_students || 0;
+            document.getElementById('statInProgress').textContent = data.in_progress_count || 0;
+            document.getElementById('statSubmitted').textContent = data.submitted_count || 0;
+            document.getElementById('statNotStarted').textContent = data.not_started_count || 0;
+            
+            // 已结束/已归档的考试显示重新激活按钮
+            const btnReactivate = document.getElementById('btnReactivate');
+            if (data.status === 'ended' || data.status === 'archived') {
+                btnReactivate.style.display = 'inline-block';
+            } else {
+                btnReactivate.style.display = 'none';
+            }
+        }
+
+        function startCountdownTimer(examData) {
+            stopCountdownTimer();
+
+            if (!examData.start_time || !examData.duration) {
+                document.getElementById('examCountdown').textContent = '不限时';
+                return;
+            }
+
+            const updateCountdown = () => {
+                if (!currentExamData) {
+                    stopCountdownTimer();
+                    return;
+                }
+
+                const now = new Date();
+                const startTime = new Date(currentExamData.start_time);
+                const duration = (currentExamData.duration || 0) * 60;
+                const endTime = new Date(startTime.getTime() + duration * 1000);
+
+                const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+
+                if (remaining <= 0) {
+                    document.getElementById('examCountdown').textContent = '00:00:00';
+                    document.getElementById('examStatus').textContent = '已结束';
+                    stopCountdownTimer();
+                    return;
+                }
+
+                const hours = Math.floor(remaining / 3600);
+                const minutes = Math.floor((remaining % 3600) / 60);
+                const seconds = remaining % 60;
+                document.getElementById('examCountdown').textContent =
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                if (hours < 1) {
+                    document.getElementById('examCountdown').style.color = '#ff6b6b';
+                } else {
+                    document.getElementById('examCountdown').style.color = 'white';
+                }
+            };
+
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+
+        function stopCountdownTimer() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+
+        async function loadStudents() {
+            const examId = document.getElementById('examSelect').value;
+            if (!examId) {
+                document.getElementById('studentTableContainer').innerHTML = '<div class="loading"><p>请先选择考试</p></div>';
+                return;
+            }
+
+            document.getElementById('studentTableContainer').innerHTML = '<div class="loading"><div class="spinner"></div><p>加载中...</p></div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/monitor/exams/${examId}/students`, { 
+                    headers: getAuthHeaders()
+                });
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    students = result.data;
+                    renderStudentTable(students);
+                    addLog(`加载考生列表成功，共 ${students.length} 人`, 'success');
+                } else if (result.code === 401) {
+                    showMessage('请重新登录', 'error');
+                    checkLogin();
+                } else {
+                    document.getElementById('studentTableContainer').innerHTML = `<div style="color:#999;text-align:center;padding:40px;">${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('studentTableContainer').innerHTML = `<div style="color:#c62828;text-align:center;padding:40px;">加载失败: ${error.message}</div>`;
+                addLog(`加载考生列表失败: ${error.message}`, 'error');
+            }
+        }
+
+        function renderStudentTable(data) {
+            if (data.length === 0) {
+                document.getElementById('studentTableContainer').innerHTML = '<div style="color:#999;text-align:center;padding:40px;">该考试暂无考生</div>';
+                return;
+            }
+
+            let html = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">选择</th>
+                            <th>考生信息</th>
+                            <th style="width: 100px;">状态</th>
+                            <th style="width: 100px;">进度</th>
+                            <th style="width: 120px;">用时</th>
+                            <th style="width: 150px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(student => {
+                const isSelected = selectedStudents.includes(student.session_id);
+                const statusText = getStatusText(student.status);
+                const statusClass = `status-${student.status}`;
+                const canReset = ['submitted', 'force_submitted', 'auto_submitted'].includes(student.status);
+                const canResume = ['submitted', 'force_submitted', 'auto_submitted'].includes(student.status);
+                const canExtraTime = student.status === 'in_progress';
+                const canForceSubmit = student.status === 'in_progress';
+
+                html += `
+                    <tr ${isSelected ? 'class="selected"' : ''}>
+                        <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${student.session_id}, this.checked)"></td>
+                        <td>
+                            <div><strong>${student.name || '未知'}</strong></div>
+                            <div style="font-size:12px;color:#999;">ID: ${student.user_id} | 会话: ${student.session_id}</div>
+                        </td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${student.progress || 0}%</td>
+                        <td>${formatDuration(student.duration)}</td>
+                        <td>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                ${canReset ? `<button class="btn btn-warning" style="padding:4px 8px;font-size:12px;" onclick="handleReset(${student.session_id}, '${student.name}')">重考</button>` : ''}
+                                ${canResume ? `<button class="btn btn-success" style="padding:4px 8px;font-size:12px;" onclick="handleResume(${student.session_id}, '${student.name}')">续考</button>` : ''}
+                                ${canExtraTime ? `<button class="btn btn-primary" style="padding:4px 8px;font-size:12px;" onclick="handleSingleExtraTime(${student.session_id}, '${student.name}')">补时</button>` : ''}
+                                ${canForceSubmit ? `<button class="btn btn-danger" style="padding:4px 8px;font-size:12px;" onclick="handleForceSubmit(${student.session_id}, '${student.name}')">交卷</button>` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('studentTableContainer').innerHTML = html;
+            updateSelectedCount();
+        }
+
+        function getStatusText(status) {
+            const map = {
+                'not_started': '未开始',
+                'in_progress': '答题中',
+                'submitted': '已交卷',
+                'force_submitted': '强制交卷',
+                'auto_submitted': '自动交卷'
+            };
+            return map[status] || status;
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds) return '-';
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function filterStudents() {
+            const searchName = document.getElementById('searchName').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            let filtered = students;
+            
+            if (searchName) {
+                filtered = filtered.filter(s => (s.name || '').toLowerCase().includes(searchName));
+            }
+            
+            if (statusFilter) {
+                filtered = filtered.filter(s => s.status === statusFilter);
+            }
+            
+            renderStudentTable(filtered);
+        }
+
+        function toggleSelect(sessionId, checked) {
+            const index = selectedStudents.indexOf(sessionId);
+            if (checked && index === -1) {
+                selectedStudents.push(sessionId);
+            } else if (!checked && index !== -1) {
+                selectedStudents.splice(index, 1);
+            }
+            updateSelectedCount();
+        }
+
+        function toggleSelectAll() {
+            const checkbox = document.getElementById('selectAll');
+            const filteredStudents = students.filter(s => {
+                const searchName = document.getElementById('searchName').value.toLowerCase();
+                const statusFilter = document.getElementById('statusFilter').value;
+                if (searchName && !(s.name || '').toLowerCase().includes(searchName)) return false;
+                if (statusFilter && s.status !== statusFilter) return false;
+                return true;
+            });
+            
+            if (checkbox.checked) {
+                selectedStudents = [...new Set([...selectedStudents, ...filteredStudents.map(s => s.session_id)])];
+            } else {
+                filteredStudents.forEach(s => {
+                    const index = selectedStudents.indexOf(s.session_id);
+                    if (index !== -1) selectedStudents.splice(index, 1);
+                });
+            }
+            renderStudentTable(students.filter(s => {
+                const searchName = document.getElementById('searchName').value.toLowerCase();
+                const statusFilter = document.getElementById('statusFilter').value;
+                if (searchName && !(s.name || '').toLowerCase().includes(searchName)) return false;
+                if (statusFilter && s.status !== statusFilter) return false;
+                return true;
+            }));
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = selectedStudents.length;
+            const hasSelection = selectedStudents.length > 0;
+            document.getElementById('btnReset').disabled = !hasSelection;
+            document.getElementById('btnResume').disabled = !hasSelection;
+            document.getElementById('btnExtraTime').disabled = !hasSelection;
+            document.getElementById('btnForceSubmit').disabled = !hasSelection;
+        }
+
+        async function handleReset(sessionId, name) {
+            if (!confirm(`确定要重置 "${name || '考生'}" 的考试吗？重置后将清空所有答题记录！`)) return;
+            addLog(`正在执行重考操作，会话ID: ${sessionId}，考生: ${name}`);
+            await executeOperation('reset', sessionId, name);
+        }
+
+        async function handleResume(sessionId, name) {
+            if (!confirm(`确定要恢复 "${name || '考生'}" 的续考吗？将保留答题记录！`)) return;
+            addLog(`正在执行续考操作，会话ID: ${sessionId}，考生: ${name}`);
+            await executeOperation('resume', sessionId, name);
+        }
+
+        function handleSingleExtraTime(sessionId, name) {
+            pendingExtraTimeSessionIds = [sessionId];
+            document.getElementById('modalExtraMinutes').value = '30';
+            document.getElementById('extraTimeModal').style.display = 'flex';
+            addLog(`准备为 ${name} 补时，会话ID: ${sessionId}`);
+        }
+
+        function closeExtraTimeModal() {
+            document.getElementById('extraTimeModal').style.display = 'none';
+            pendingExtraTimeSessionIds = [];
+        }
+
+        async function confirmExtraTime() {
+            const minutes = parseInt(document.getElementById('modalExtraMinutes').value);
+            if (!minutes || minutes < 1) {
+                showMessage('请输入有效的补时分钟数', 'error');
+                return;
+            }
+            
+            closeExtraTimeModal();
+            
+            for (const sessionId of pendingExtraTimeSessionIds) {
+                const student = students.find(s => s.session_id === sessionId);
+                addLog(`正在执行补时操作，会话ID: ${sessionId}，考生: ${student?.name}，时间: ${minutes}分钟`);
+                await executeOperation('extra_time', sessionId, student?.name, minutes);
+            }
+            
+            pendingExtraTimeSessionIds = [];
+        }
+
+        async function handleForceSubmit(sessionId, name) {
+            if (!confirm(`确定要强制提交 "${name || '考生'}" 的试卷吗？`)) return;
+            addLog(`正在执行强制交卷操作，会话ID: ${sessionId}，考生: ${name}`);
+            await executeOperation('force_submit', sessionId, name);
+        }
+
+        async function batchReset() {
+            if (!confirm(`确定要对选中的 ${selectedStudents.length} 名考生执行重考吗？将清空所有答题记录！`)) return;
+            addLog(`批量重考，共 ${selectedStudents.length} 人`);
+            await batchExecute('reset');
+        }
+
+        async function batchResume() {
+            if (!confirm(`确定要对选中的 ${selectedStudents.length} 名考生执行续考吗？将保留答题记录！`)) return;
+            addLog(`批量续考，共 ${selectedStudents.length} 人`);
+            await batchExecute('resume');
+        }
+
+        async function batchExtraTime() {
+            pendingExtraTimeSessionIds = [...selectedStudents];
+            document.getElementById('modalExtraMinutes').value = '30';
+            document.getElementById('extraTimeModal').style.display = 'flex';
+            addLog(`准备批量补时，共 ${selectedStudents.length} 人`);
+        }
+
+        async function batchForceSubmit() {
+            if (!confirm(`确定要强制提交选中的 ${selectedStudents.length} 名考生的试卷吗？`)) return;
+            addLog(`批量强制交卷，共 ${selectedStudents.length} 人`);
+            await batchExecute('force_submit');
+        }
+
+        async function reactivateExam() {
+            const examId = document.getElementById('examSelect').value;
+            if (!examId) {
+                showMessage('请先选择考试', 'error');
+                return;
+            }
+            
+            const examName = document.getElementById('examSelect').selectedOptions[0].textContent;
+            if (!confirm(`确定要重新激活考试「${examName}」吗？\n\n激活后考试将恢复为"已发布"状态，考生可以重新进入考试。\n旧的考生会话数据将保留，您可以在考生列表中对个别考生执行重考/续考操作。`)) return;
+            
+            addLog(`正在重新激活考试，ID: ${examId}`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/exams/${examId}/reactivate`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    showMessage('考试已重新激活！状态变为"已发布"', 'success');
+                    addLog(`考试重新激活成功，ID: ${examId}`, 'success');
+                    // 刷新考试列表和概览
+                    await loadExams();
+                    document.getElementById('examOverview').style.display = 'none';
+                    document.getElementById('btnReactivate').style.display = 'none';
+                } else if (result.code === 401) {
+                    showMessage('请重新登录', 'error');
+                    checkLogin();
+                } else {
+                    showMessage(result.message || '激活失败', 'error');
+                    addLog(`考试重新激活失败，原因: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误或服务器异常', 'error');
+                addLog(`考试重新激活失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function batchExecute(operation) {
+            let successCount = 0;
+            let failCount = 0;
+            
+            for (const sessionId of selectedStudents) {
+                const student = students.find(s => s.session_id === sessionId);
+                const result = await executeOperation(operation, sessionId, student?.name);
+                if (result) successCount++;
+                else failCount++;
+            }
+            
+            selectedStudents = [];
+            updateSelectedCount();
+            loadStudents();
+            
+            if (failCount === 0) {
+                showMessage(`批量${getOperationName(operation)}成功！共处理 ${successCount} 人`, 'success');
+            } else {
+                showMessage(`批量${getOperationName(operation)}完成：成功 ${successCount} 人，失败 ${failCount} 人`, 'info');
+            }
+        }
+
+        function getOperationName(operation) {
+            const map = {
+                'reset': '重考',
+                'resume': '续考',
+                'extra_time': '补时',
+                'force_submit': '强制交卷'
+            };
+            return map[operation] || operation;
+        }
+
+        async function executeOperation(operation, sessionId, name, extraMinutes) {
+            let url = '';
+            let method = 'POST';
+            let body = null;
+            
+            switch (operation) {
+                case 'reset':
+                    url = `${API_BASE}/monitor/sessions/${sessionId}/reset`;
+                    break;
+                case 'resume':
+                    url = `${API_BASE}/monitor/sessions/${sessionId}/resume`;
+                    break;
+                case 'extra_time':
+                    url = `${API_BASE}/monitor/sessions/${sessionId}/extra-time`;
+                    body = JSON.stringify({ extra_minutes: extraMinutes });
+                    break;
+                case 'force_submit':
+                    url = `${API_BASE}/monitor/sessions/${sessionId}/force-submit`;
+                    body = JSON.stringify({ reason: '管理员强制交卷' });
+                    break;
+            }
+            
+            try {
+                const headers = getAuthHeaders();
+                if (body) {
+                    headers['Content-Type'] = 'application/json';
+                }
+                const response = await fetch(url, {
+                    method: method,
+                    headers: headers,
+                    body: body
+                });
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    const opName = getOperationName(operation);
+                    showMessage(`${opName}成功！`, 'success');
+                    addLog(`${opName}成功，会话ID: ${sessionId}，考生: ${name}${extraMinutes ? `，时间: ${extraMinutes}分钟` : ''}`, 'success');
+                    loadStudents();
+                    return true;
+                } else if (result.code === 401) {
+                    showMessage('请重新登录', 'error');
+                    checkLogin();
+                    return false;
+                } else {
+                    showMessage(result.message || '操作失败', 'error');
+                    addLog(`${getOperationName(operation)}失败，会话ID: ${sessionId}，原因: ${result.message}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                showMessage('网络错误或服务器异常', 'error');
+                addLog(`${getOperationName(operation)}失败，会话ID: ${sessionId}，原因: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        function showMessage(text, type = 'success') {
+            const container = document.querySelector('.container');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            message.style.display = 'block';
+            container.insertBefore(message, container.firstChild);
+            setTimeout(() => message.remove(), 3000);
+        }
+
+        function addLog(text, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString('zh-CN');
+            const logItem = document.createElement('div');
+            logItem.style.padding = '8px 0';
+            logItem.style.borderBottom = '1px solid #f0f0f0';
+            logItem.innerHTML = `<span style="color:#999;font-size:12px;">${timestamp}</span> - <span style="color:${type === 'success' ? '#388e3c' : type === 'error' ? '#c62828' : '#1976d2'}">${text}</span>`;
+            container.insertBefore(logItem, container.firstChild);
+            if (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLogin();
+        });
+    </script>
+</body>
+</html>

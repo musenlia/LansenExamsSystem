@@ -1,0 +1,5 @@
+data/exam_system.db
+*.pyc
+_pycache_/
+.env
+*.log

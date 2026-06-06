@@ -1,0 +1,33 @@
+# 学习培训考试管理系统 - 配置文件
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  cors_origins:
+    - "*"
+
+database:
+  type: "sqlite"
+  path: "data/exam_system.db"
+
+jwt:
+  secret_key: "exam-system-secret-key-2026-please-change-in-production"
+  algorithm: "HS256"
+  expire_minutes: 1440  # 24小时
+
+upload:
+  max_size: 10485760  # 10MB
+  allowed_extensions:
+    - ".xlsx"
+    - ".xls"
+    - ".doc"
+    - ".docx"
+    - ".pdf"
+    - ".jpg"
+    - ".png"
+
+system:
+  exam_auto_submit_minutes: 5  # 考试结束前5分钟自动提交
+  max_tab_switch_count: 3  # 切屏最大次数
+  session_timeout_minutes: 120  # 会话超时时间
