@@ -53,3 +53,13 @@ cd LansenExamsSystem
 #    首次运行自动创建数据库（约3秒）
 #    启动后自动打开浏览器访问 http://localhost:8000
 #    局域网内电脑打开浏览器访问 http://IP地址:8000
+
+## 项目截图
+<img width="439" height="434" alt="登录页面" src="https://github.com/user-attachments/assets/cb599584-a2c9-487e-876b-3d9a7b97516d" />
+<img width="1204" height="662" alt="管理页" src="https://github.com/user-attachments/assets/c71c0802-41f0-49ef-b3b5-01995e742f0b" />
+<img width="1366" height="768" alt="实时监考界面" src="https://github.com/user-attachments/assets/0004bc63-7e29-45b8-a281-fa071dea5b01" />
+<img width="1366" height="768" alt="考试登录" src="https://github.com/user-attachments/assets/2d2b4d3e-e6cc-4d23-98d8-8268ccb862d8" />
+<img width="1366" height="768" alt="考试答题" src="https://github.com/user-attachments/assets/f24cd315-54a4-4e39-a2d8-43bcdde790f8" />
+
+
+
