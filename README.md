@@ -52,3 +52,4 @@ cd LansenExamsSystem
 # 2. 双击 run.bat 启动服务
 #    首次运行自动创建数据库（约3秒）
 #    启动后自动打开浏览器访问 http://localhost:8000
+#    局域网内电脑打开浏览器访问 http://IP地址:8000
